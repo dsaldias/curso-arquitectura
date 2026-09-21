@@ -1,4 +1,7 @@
 web/node_modules/
 web_quasar/node_modules/
 web_quasar/.pnpm-store/
+web_quasar/.pnpm-store/v11/
+web_quasar/.pnpm-store/v11/index.db
+web_quasar/.pnpm-store/v11/files/
 server/gestor_tareas
