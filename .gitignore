@@ -1,3 +1,4 @@
 web/node_modules/
 web_quasar/node_modules/
+web_quasar/.pnpm-store/
 server/gestor_tareas
