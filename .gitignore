@@ -4,4 +4,5 @@ web_quasar/.pnpm-store/
 web_quasar/.pnpm-store/v11/
 web_quasar/.pnpm-store/v11/index.db
 web_quasar/.pnpm-store/v11/files/
+web_quasar/.pnpm-store/*
 server/gestor_tareas
