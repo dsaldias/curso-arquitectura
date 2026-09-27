@@ -76,6 +76,9 @@ async function login() {
 
   const resultado = await response.text();
 
+  console.log("tipo: ",typeof(resultado));
+
+
   respuesta.value = resultado
 
   if (respuesta.value == "Acceso concedido"){

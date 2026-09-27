@@ -1,9 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"gestor_tareas/ejemplos"
+	"log"
 	"net/http"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type LoginRequest struct {
@@ -11,11 +16,112 @@ type LoginRequest struct {
 	Password string `json:"password1"`
 }
 
+func conexion() *sql.DB {
+	dsn := "root:S1nclave@tcp(localhost:3306)/gestor_tareas?parseTime=true"
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// defer db.Close()
+
+	// Verificar que realmente existe conexión
+	if err := db.Ping(); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Conexión a MySQL exitosa")
+
+	return db
+}
+
+type Usuario struct {
+	Id        string
+	Nombre    string
+	Apellidos string
+	Correo    *string
+	Username  string
+	Password  string
+}
+
+func ListarUsuarios(db *sql.DB) {
+	query := `
+	select 
+		id,
+		nombre,
+		apellidos,
+		correo,
+		username,
+		password
+		from usuarios;
+	`
+
+	rows, err := db.Query(query)
+	if err != nil {
+		fmt.Println(err)
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	/* for indice, objeto := range []string{} {
+
+	} */
+
+	for rows.Next() {
+
+		u := Usuario{}
+
+		rows.Scan(
+			&u.Id,
+			&u.Nombre,
+			&u.Apellidos,
+			&u.Correo,
+			&u.Username,
+			&u.Password,
+		)
+		fmt.Println(">>>>>", u)
+		fmt.Printf("%+v\n", u)
+	}
+
+}
+
+func VerificarAcceso(db *sql.DB, username string, password string) {
+	/* select
+	id,
+	nombre,
+	apellidos,
+	correo,
+	username,
+	password
+	from usuarios
+	where username = ? and password = ?; */
+}
+
 func main() {
+
+	db := conexion()
+
+	ListarUsuarios(db)
 
 	// GET
 	http.HandleFunc("/hola", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "Hola desde el servidor Go")
+
+		w.Header().Set("Content-Type", "application/json")
+
+		xn := r.URL.Query().Get("xnombre")
+		xa := r.URL.Query().Get("apellidos")
+
+		fmt.Println(">>>", xn, xa)
+
+		resultado := ejemplos.Xsaludo()
+
+		resul := map[string]any{
+			"nombre":    "Diego",
+			"telefonos": 787,
+			"saludo":    resultado,
+		}
+
+		json.NewEncoder(w).Encode(&resul)
+
 	})
 
 	// POST
@@ -48,8 +154,6 @@ func main() {
 
 		fmt.Println("Usuario:", login.Usuario)
 		fmt.Println("Password:", login.Password)
-
-		// fmt.Fprintln(w, "Login recibido correctamente")
 
 		if login.Usuario == "admin" && login.Password == "123456" {
 			fmt.Fprintln(w, "Acceso concedido")
