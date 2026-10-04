@@ -81,7 +81,7 @@ async function login() {
 
   respuesta.value = resultado
 
-  if (respuesta.value == "Acceso concedido"){
+  if (respuesta.value.includes("Acceso concedido")){
     router.push('/main');
     return;
   }
@@ -89,10 +89,9 @@ async function login() {
   console.log("Respuesta del servidor:", resultado);
   console.log(resultado);
 
-  router.push('/main');
+  // router.push('/main');
 }
 
 
 
 </script>
-```

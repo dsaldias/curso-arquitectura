@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"gestor_tareas/database/usuarios"
 	"gestor_tareas/ejemplos"
 	"log"
 	"net/http"
@@ -84,16 +86,40 @@ func ListarUsuarios(db *sql.DB) {
 
 }
 
-func VerificarAcceso(db *sql.DB, username string, password string) {
-	/* select
-	id,
-	nombre,
-	apellidos,
-	correo,
-	username,
-	password
-	from usuarios
-	where username = ? and password = ?; */
+func VerificarAcceso(db *sql.DB, username string, password string) (string, error) {
+	query := `
+	select 
+		id,
+		nombre,
+		apellidos,
+		correo,
+		username,
+		password
+		from usuarios
+		where username = ? and password = ?;
+	`
+
+	row := db.QueryRow(query, username, password)
+
+	user := Usuario{}
+	err := row.Scan(
+		&user.Id,
+		&user.Nombre,
+		&user.Apellidos,
+		&user.Correo,
+		&user.Username,
+		&user.Password,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			t := "no hay usuarios"
+			return "", errors.New(t)
+		}
+		return "", err
+	}
+
+	return "Acceso concedido", nil
 }
 
 func main() {
@@ -122,6 +148,56 @@ func main() {
 
 		json.NewEncoder(w).Encode(&resul)
 
+	})
+
+	http.HandleFunc("/usuarios", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		listado, err := usuarios.Listar(db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		json.NewEncoder(w).Encode(&listado)
+
+	})
+
+	http.HandleFunc("/new-usuario", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+		// Preflight
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if r.Method != http.MethodPost {
+			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Recibir datos enviados desde el frontend
+		input := usuarios.NewUsuario{}
+
+		err := json.NewDecoder(r.Body).Decode(&input)
+		if err != nil {
+			http.Error(w, "JSON inválido: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Crear usuario
+		us, err := usuarios.Crear(db, input)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Responder al frontend
+		json.NewEncoder(w).Encode(us)
 	})
 
 	// POST
@@ -155,14 +231,22 @@ func main() {
 		fmt.Println("Usuario:", login.Usuario)
 		fmt.Println("Password:", login.Password)
 
-		if login.Usuario == "admin" && login.Password == "123456" {
+		_, err = VerificarAcceso(db, login.Usuario, login.Password)
+		if err != nil {
+			fmt.Println("el error de la db es:", err)
+			http.Error(w, "usuario o clave incorrectos", http.StatusBadRequest)
+		} else {
+
+			// fmt.Println("el resultado es:", resultado)
+			// if login.Usuario == "admin" && login.Password == "123456" {
 			fmt.Fprintln(w, "Acceso concedido")
 			return
 
-		} else {
+		}
+		/* else {
 			http.Error(w, "usuario o clave incorrectos", http.StatusBadRequest)
 			return
-		}
+		} */
 
 	})
 

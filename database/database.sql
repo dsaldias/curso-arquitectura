@@ -20,3 +20,9 @@ create table `tareas` (
   foreign key(actividad_id) references actividades(id)
 );
 
+
+-- CRUD
+-- Create 
+-- Read
+-- Update 
+-- Delete 
