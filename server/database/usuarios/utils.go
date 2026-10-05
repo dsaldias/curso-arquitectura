@@ -3,6 +3,7 @@ package usuarios
 import "database/sql"
 
 type NewUsuario struct {
+	Id        *string
 	Nombre    string
 	Apellidos string
 	Correo    *string

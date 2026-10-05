@@ -3,22 +3,22 @@
     <!-- ENCABEZADO -->
     <div class="row items-center justify-between q-mb-md">
       <div>
-        <div class="text-h5">Usuarios</div>
-        <div class="text-grey-7">Gestión de usuarios del sistema</div>
+        <div class="text-h5">Actividades</div>
+        <div class="text-grey-7">Gestión de actividades del sistema</div>
       </div>
 
       <q-btn
         color="primary"
         icon="add"
-        label="Nuevo usuario"
-        @click="nuevoUsuario"
+        label="Nueva actividad"
+        @click="nuevaActividad"
       />
     </div>
 
     <!-- TABLA -->
     <q-table
-      title="Lista de usuarios"
-      :rows="usuarios"
+      title="Lista de actividades"
+      :rows="actividades"
       :columns="columns"
       row-key="Id"
       :loading="loading"
@@ -33,9 +33,9 @@
             round
             color="primary"
             icon="edit"
-            @click="editarUsuario(props.row)"
+            @click="editarActividad(props.row)"
           >
-            <q-tooltip> Editar usuario </q-tooltip>
+            <q-tooltip> Editar actividad </q-tooltip>
           </q-btn>
 
           <q-btn
@@ -43,9 +43,9 @@
             round
             color="negative"
             icon="delete"
-            @click="eliminarUsuario(props.row)"
+            @click="eliminarActividad(props.row)"
           >
-            <q-tooltip> Eliminar usuario </q-tooltip>
+            <q-tooltip> Eliminar actividad </q-tooltip>
           </q-btn>
         </q-td>
       </template>
@@ -56,14 +56,14 @@
       <q-card style="width: 500px; max-width: 90vw">
         <q-card-section>
           <div class="text-h6">
-            {{ editando ? "Editar usuario" : "Nuevo usuario" }}
+            {{ editando ? "Editar actividad" : "Nueva actividad" }}
           </div>
         </q-card-section>
 
         <q-separator />
 
         <!-- FORMULARIO -->
-        <q-form @submit="guardarUsuario">
+        <q-form @submit="guardarActividad">
           <q-card-section>
             <q-input
               v-model="form.Nombre"
@@ -74,41 +74,20 @@
             />
 
             <q-input
-              v-model="form.Apellidos"
-              label="Apellidos"
+              v-model="form.Descripcion"
+              label="Descripción"
+              type="textarea"
               outlined
-              :rules="[(val) => !!val || 'Los apellidos son obligatorios']"
+              :rules="[(val) => !!val || 'La descripción es obligatoria']"
               class="q-mb-md"
             />
 
             <q-input
-              v-model="form.Correo"
-              label="Correo electrónico"
-              type="email"
+              v-model="form.Fecha"
+              label="Fecha"
+              type="date"
               outlined
-              :rules="[
-                (val) => !val || /.+@.+\..+/.test(val) || 'Correo inválido',
-              ]"
-              class="q-mb-md"
-            />
-
-            <q-input
-              v-model="form.Username"
-              label="Username"
-              outlined
-              :rules="[(val) => !!val || 'El username es obligatorio']"
-              class="q-mb-md"
-            />
-
-            <q-input
-              v-model="form.Password"
-              label="Password"
-              type="password"
-              outlined
-              :rules="[
-                (val) =>
-                  !!form.Id || !!val || 'La contraseña es obligatoria...',
-              ]"
+              :rules="[(val) => !!val || 'La fecha es obligatoria']"
               class="q-mb-md"
             />
           </q-card-section>
@@ -137,7 +116,7 @@ import { useQuasar } from "quasar";
 
 const $q = useQuasar();
 
-const usuarios = ref([]);
+const actividades = ref([]);
 const loading = ref(false);
 const guardando = ref(false);
 
@@ -147,10 +126,8 @@ const editando = ref(false);
 const form = ref({
   Id: "",
   Nombre: "",
-  Apellidos: "",
-  Correo: "",
-  Username: "",
-  Password: "",
+  Descripcion: "",
+  Fecha: "",
 });
 
 const columns = [
@@ -162,23 +139,16 @@ const columns = [
     sortable: true,
   },
   {
-    name: "Apellidos",
-    label: "Apellidos",
-    field: "Apellidos",
+    name: "Descripcion",
+    label: "Descripción",
+    field: "Descripcion",
     align: "left",
     sortable: true,
   },
   {
-    name: "Correo",
-    label: "Correo",
-    field: "Correo",
-    align: "left",
-    sortable: true,
-  },
-  {
-    name: "Username",
-    label: "Username",
-    field: "Username",
+    name: "Fecha",
+    label: "Fecha",
+    field: "Fecha",
     align: "left",
     sortable: true,
   },
@@ -191,26 +161,26 @@ const columns = [
 ];
 
 // ===============================
-// LISTAR USUARIOS
+// LISTAR ACTIVIDADES
 // ===============================
 
-async function cargarUsuarios() {
+async function cargarActividades() {
   loading.value = true;
 
   try {
-    const response = await fetch("http://localhost:8080/usuarios");
+    const response = await fetch("http://localhost:8080/actividades");
 
     if (!response.ok) {
-      throw new Error("Error al obtener los usuarios");
+      throw new Error("Error al obtener las actividades");
     }
 
-    usuarios.value = await response.json();
+    actividades.value = await response.json();
   } catch (error) {
     console.error(error);
 
     $q.notify({
       type: "negative",
-      message: "No se pudieron cargar los usuarios",
+      message: "No se pudieron cargar las actividades",
     });
   } finally {
     loading.value = false;
@@ -218,38 +188,34 @@ async function cargarUsuarios() {
 }
 
 // ===============================
-// NUEVO USUARIO
+// NUEVA ACTIVIDAD
 // ===============================
 
-function nuevoUsuario() {
+function nuevaActividad() {
   editando.value = false;
 
   form.value = {
     Id: "",
     Nombre: "",
-    Apellidos: "",
-    Correo: "",
-    Username: "",
-    Password: "",
+    Descripcion: "",
+    Fecha: "",
   };
 
   dialog.value = true;
 }
 
 // ===============================
-// EDITAR USUARIO
+// EDITAR ACTIVIDAD
 // ===============================
 
-function editarUsuario(usuario) {
+function editarActividad(actividad) {
   editando.value = true;
 
   form.value = {
-    Id: usuario.Id,
-    Nombre: usuario.Nombre,
-    Apellidos: usuario.Apellidos,
-    Correo: usuario.Correo,
-    Username: usuario.Username,
-    // Password: usuario.Password,
+    Id: actividad.Id,
+    Nombre: actividad.Nombre,
+    Descripcion: actividad.Descripcion,
+    Fecha: actividad.Fecha,
   };
 
   dialog.value = true;
@@ -259,27 +225,24 @@ function editarUsuario(usuario) {
 // GUARDAR
 // ===============================
 
-async function guardarUsuario() {
+async function guardarActividad() {
   guardando.value = true;
 
   try {
-    let url = "http://localhost:8080/new-usuario";
+    let url = "http://localhost:8080/new-actividad";
     let method = "POST";
 
     if (editando.value) {
-      // url = `http://localhost:8080/usuarios/${form.value.Id}`;
-      url = "http://localhost:8080/actualizar-usuario";
+      url = "http://localhost:8080/actualizar-actividad";
       method = "PUT";
     }
 
     let datitos = JSON.stringify({
-        Id: form.value.Id,
-        Nombre: form.value.Nombre,
-        Apellidos: form.value.Apellidos,
-        Correo: form.value.Correo,
-        Username: form.value.Username,
-        Password: form.value.Password,
-      })
+      Id: form.value.Id,
+      Nombre: form.value.Nombre,
+      Descripcion: form.value.Descripcion,
+      Fecha: form.value.Fecha,
+    });
 
     console.log(datitos);
 
@@ -292,25 +255,25 @@ async function guardarUsuario() {
     });
 
     if (!response.ok) {
-      throw new Error("Error al guardar usuario");
+      throw new Error("Error al guardar actividad");
     }
 
     $q.notify({
       type: "positive",
       message: editando.value
-        ? "Usuario actualizado correctamente"
-        : "Usuario creado correctamente",
+        ? "Actividad actualizada correctamente"
+        : "Actividad creada correctamente",
     });
 
     dialog.value = false;
 
-    await cargarUsuarios();
+    await cargarActividades();
   } catch (error) {
     console.error(error);
 
     $q.notify({
       type: "negative",
-      message: "No se pudo guardar el usuario",
+      message: "No se pudo guardar la actividad",
     });
   } finally {
     guardando.value = false;
@@ -321,37 +284,37 @@ async function guardarUsuario() {
 // ELIMINAR
 // ===============================
 
-function eliminarUsuario(usuario) {
+function eliminarActividad(actividad) {
   $q.dialog({
     title: "Confirmar",
-    message: `¿Deseas eliminar al usuario ${usuario.Username}?`,
+    message: `¿Deseas eliminar la actividad ${actividad.Nombre}?`,
     cancel: true,
     persistent: true,
   }).onOk(async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/eliminar-usuario?idusuario=`+usuario.Id,
+        `http://localhost:8080/eliminar-actividad?idactividad=` + actividad.Id,
         {
           method: "DELETE",
         },
       );
 
       if (!response.ok) {
-        throw new Error("Error al eliminar usuario");
+        throw new Error("Error al eliminar actividad");
       }
 
       $q.notify({
         type: "positive",
-        message: "Usuario eliminado correctamente",
+        message: "Actividad eliminada correctamente",
       });
 
-      await cargarUsuarios();
+      await cargarActividades();
     } catch (error) {
       console.error(error);
 
       $q.notify({
         type: "negative",
-        message: "No se pudo eliminar el usuario",
+        message: "No se pudo eliminar la actividad",
       });
     }
   });
@@ -362,6 +325,6 @@ function eliminarUsuario(usuario) {
 // ===============================
 
 onMounted(() => {
-  cargarUsuarios();
+  cargarActividades();
 });
 </script>

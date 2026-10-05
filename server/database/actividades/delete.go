@@ -1,9 +1,9 @@
-package usuarios
+package actividades
 
 import "database/sql"
 
 func Eliminar(db *sql.DB, id string) (string, error) {
-	query := `update usuarios set estado = 0 where id = ?;`
+	query := `delete from actividades where id = ?;`
 	_, err := db.Exec(query, id)
 	if err != nil {
 		return "", err

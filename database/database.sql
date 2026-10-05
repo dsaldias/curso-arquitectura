@@ -1,11 +1,12 @@
 
 create table `usuarios` (
-  `id` integer not null auto_increment primary key,
+  `id` integer unsigned not null auto_increment primary key,
   `nombre` varchar(30) not null,
   `apellidos` varchar(30) not null,
   `correo` varchar(120),
   `username` varchar(30) not null unique,
-  `password` varchar(30) not null
+  `password` varchar(100) not null,
+  `estado` tinyint not null default 1
 );
 
 create table `actividades` (

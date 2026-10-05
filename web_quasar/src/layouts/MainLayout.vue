@@ -80,19 +80,19 @@ const linksList: EssentialLinkProps[] = [
     label: "Usuarios",
     caption: "gestion de usuarios",
     icon: "school",
-    link: "main/lista-usuarios"
+    link: "/main/lista-usuarios"
   },
   {
     label: "Actividades",
     caption: "creacion de actividades",
     icon: "code",
-    link: "https://github.com/quasarframework"
+    link: "/main/lista-actividades"
   },
   {
     label: "Tareas",
     caption: "lista de tareas",
     icon: "chat",
-    link: "https://chat.quasar.dev"
+    link: "/main/lista-tareas"
   },
 ];
 

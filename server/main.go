@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"gestor_tareas/database/actividades"
 	"gestor_tareas/database/usuarios"
 	"gestor_tareas/ejemplos"
 	"log"
@@ -96,7 +97,7 @@ func VerificarAcceso(db *sql.DB, username string, password string) (string, erro
 		username,
 		password
 		from usuarios
-		where username = ? and password = ?;
+		where username = ? and password = sha2(?,256);
 	`
 
 	row := db.QueryRow(query, username, password)
@@ -198,6 +199,170 @@ func main() {
 
 		// Responder al frontend
 		json.NewEncoder(w).Encode(us)
+	})
+
+	http.HandleFunc("/actualizar-usuario", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+		// Preflight
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if r.Method != http.MethodPut {
+			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Recibir datos enviados desde el frontend
+		input := usuarios.NewUsuario{}
+
+		err := json.NewDecoder(r.Body).Decode(&input)
+		if err != nil {
+			http.Error(w, "JSON inválido: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Actualizar usuario
+		us, err := usuarios.Actualizar(db, input)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Responder al frontend
+		json.NewEncoder(w).Encode(us)
+	})
+
+	http.HandleFunc("/eliminar-usuario", func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Content-Type", "application/json")
+
+		xn := r.URL.Query().Get("idusuario")
+
+		respuesta, err := usuarios.Eliminar(db, xn)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		resul := map[string]any{
+			"resp": respuesta,
+		}
+
+		json.NewEncoder(w).Encode(&resul)
+
+	})
+
+	http.HandleFunc("/actividades", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		listado, err := actividades.Listar(db)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		json.NewEncoder(w).Encode(&listado)
+
+	})
+
+	http.HandleFunc("/new-actividad", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+		// Preflight
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if r.Method != http.MethodPost {
+			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Recibir datos enviados desde el frontend
+		input := actividades.NewActividad{}
+
+		err := json.NewDecoder(r.Body).Decode(&input)
+		if err != nil {
+			http.Error(w, "JSON inválido: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Crear actividad
+		act, err := actividades.Crear(db, input)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Responder al frontend
+		json.NewEncoder(w).Encode(act)
+	})
+
+	http.HandleFunc("/actualizar-actividad", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+
+		// Preflight
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		if r.Method != http.MethodPut {
+			http.Error(w, "Método no permitido", http.StatusMethodNotAllowed)
+			return
+		}
+
+		// Recibir datos enviados desde el frontend
+		input := actividades.NewActividad{}
+
+		err := json.NewDecoder(r.Body).Decode(&input)
+		if err != nil {
+			http.Error(w, "JSON inválido: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Actualizar actividad
+		act, err := actividades.Actualizar(db, input)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		// Responder al frontend
+		json.NewEncoder(w).Encode(act)
+	})
+
+	http.HandleFunc("/eliminar-actividad", func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Content-Type", "application/json")
+
+		xn := r.URL.Query().Get("idactividad")
+
+		respuesta, err := actividades.Eliminar(db, xn)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		resul := map[string]any{
+			"resp": respuesta,
+		}
+
+		json.NewEncoder(w).Encode(&resul)
+
 	})
 
 	// POST

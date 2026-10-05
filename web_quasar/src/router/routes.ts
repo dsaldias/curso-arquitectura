@@ -13,6 +13,8 @@ const routes: RouteRecordRaw[] = [
       { path: "second", component: () => import("@/pages/SecondPage.vue") },
       { path: "tercera", component: () => import("@/pages/tercera_pagina.vue") },
       { path: "lista-usuarios", component: () => import("@/pages/usuarios/index-usuarios.vue") },
+      { path: "lista-actividades", component: () => import("@/pages/actividades/index-actividades.vue") },
+      { path: "lista-tareas", component: () => import("@/pages/tareas/index-tareas.vue") },
     ]
   },
 

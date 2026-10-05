@@ -3,22 +3,22 @@
     <!-- ENCABEZADO -->
     <div class="row items-center justify-between q-mb-md">
       <div>
-        <div class="text-h5">Usuarios</div>
-        <div class="text-grey-7">Gestión de usuarios del sistema</div>
+        <div class="text-h5">Tareas</div>
+        <div class="text-grey-7">Gestión de tareas del sistema</div>
       </div>
 
       <q-btn
         color="primary"
         icon="add"
-        label="Nuevo usuario"
-        @click="nuevoUsuario"
+        label="Nueva tarea"
+        @click="nuevaTarea"
       />
     </div>
 
     <!-- TABLA -->
     <q-table
-      title="Lista de usuarios"
-      :rows="usuarios"
+      title="Lista de tareas"
+      :rows="tareas"
       :columns="columns"
       row-key="Id"
       :loading="loading"
@@ -33,9 +33,9 @@
             round
             color="primary"
             icon="edit"
-            @click="editarUsuario(props.row)"
+            @click="editarTarea(props.row)"
           >
-            <q-tooltip> Editar usuario </q-tooltip>
+            <q-tooltip> Editar tarea </q-tooltip>
           </q-btn>
 
           <q-btn
@@ -43,9 +43,9 @@
             round
             color="negative"
             icon="delete"
-            @click="eliminarUsuario(props.row)"
+            @click="eliminarTarea(props.row)"
           >
-            <q-tooltip> Eliminar usuario </q-tooltip>
+            <q-tooltip> Eliminar tarea </q-tooltip>
           </q-btn>
         </q-td>
       </template>
@@ -56,14 +56,14 @@
       <q-card style="width: 500px; max-width: 90vw">
         <q-card-section>
           <div class="text-h6">
-            {{ editando ? "Editar usuario" : "Nuevo usuario" }}
+            {{ editando ? "Editar tarea" : "Nueva tarea" }}
           </div>
         </q-card-section>
 
         <q-separator />
 
         <!-- FORMULARIO -->
-        <q-form @submit="guardarUsuario">
+        <q-form @submit="guardarTarea">
           <q-card-section>
             <q-input
               v-model="form.Nombre"
@@ -74,41 +74,11 @@
             />
 
             <q-input
-              v-model="form.Apellidos"
-              label="Apellidos"
+              v-model="form.ActividadId"
+              label="ID actividad"
+              type="number"
               outlined
-              :rules="[(val) => !!val || 'Los apellidos son obligatorios']"
-              class="q-mb-md"
-            />
-
-            <q-input
-              v-model="form.Correo"
-              label="Correo electrónico"
-              type="email"
-              outlined
-              :rules="[
-                (val) => !val || /.+@.+\..+/.test(val) || 'Correo inválido',
-              ]"
-              class="q-mb-md"
-            />
-
-            <q-input
-              v-model="form.Username"
-              label="Username"
-              outlined
-              :rules="[(val) => !!val || 'El username es obligatorio']"
-              class="q-mb-md"
-            />
-
-            <q-input
-              v-model="form.Password"
-              label="Password"
-              type="password"
-              outlined
-              :rules="[
-                (val) =>
-                  !!form.Id || !!val || 'La contraseña es obligatoria...',
-              ]"
+              :rules="[(val) => !!val || 'La actividad es obligatoria']"
               class="q-mb-md"
             />
           </q-card-section>
@@ -137,7 +107,7 @@ import { useQuasar } from "quasar";
 
 const $q = useQuasar();
 
-const usuarios = ref([]);
+const tareas = ref([]);
 const loading = ref(false);
 const guardando = ref(false);
 
@@ -147,10 +117,7 @@ const editando = ref(false);
 const form = ref({
   Id: "",
   Nombre: "",
-  Apellidos: "",
-  Correo: "",
-  Username: "",
-  Password: "",
+  ActividadId: "",
 });
 
 const columns = [
@@ -162,23 +129,9 @@ const columns = [
     sortable: true,
   },
   {
-    name: "Apellidos",
-    label: "Apellidos",
-    field: "Apellidos",
-    align: "left",
-    sortable: true,
-  },
-  {
-    name: "Correo",
-    label: "Correo",
-    field: "Correo",
-    align: "left",
-    sortable: true,
-  },
-  {
-    name: "Username",
-    label: "Username",
-    field: "Username",
+    name: "ActividadId",
+    label: "ID actividad",
+    field: "ActividadId",
     align: "left",
     sortable: true,
   },
@@ -191,26 +144,26 @@ const columns = [
 ];
 
 // ===============================
-// LISTAR USUARIOS
+// LISTAR TAREAS
 // ===============================
 
-async function cargarUsuarios() {
+async function cargarTareas() {
   loading.value = true;
 
   try {
-    const response = await fetch("http://localhost:8080/usuarios");
+    const response = await fetch("http://localhost:8080/tareas");
 
     if (!response.ok) {
-      throw new Error("Error al obtener los usuarios");
+      throw new Error("Error al obtener las tareas");
     }
 
-    usuarios.value = await response.json();
+    tareas.value = await response.json();
   } catch (error) {
     console.error(error);
 
     $q.notify({
       type: "negative",
-      message: "No se pudieron cargar los usuarios",
+      message: "No se pudieron cargar las tareas",
     });
   } finally {
     loading.value = false;
@@ -218,38 +171,32 @@ async function cargarUsuarios() {
 }
 
 // ===============================
-// NUEVO USUARIO
+// NUEVA TAREA
 // ===============================
 
-function nuevoUsuario() {
+function nuevaTarea() {
   editando.value = false;
 
   form.value = {
     Id: "",
     Nombre: "",
-    Apellidos: "",
-    Correo: "",
-    Username: "",
-    Password: "",
+    ActividadId: "",
   };
 
   dialog.value = true;
 }
 
 // ===============================
-// EDITAR USUARIO
+// EDITAR TAREA
 // ===============================
 
-function editarUsuario(usuario) {
+function editarTarea(tarea) {
   editando.value = true;
 
   form.value = {
-    Id: usuario.Id,
-    Nombre: usuario.Nombre,
-    Apellidos: usuario.Apellidos,
-    Correo: usuario.Correo,
-    Username: usuario.Username,
-    // Password: usuario.Password,
+    Id: tarea.Id,
+    Nombre: tarea.Nombre,
+    ActividadId: tarea.ActividadId,
   };
 
   dialog.value = true;
@@ -259,27 +206,23 @@ function editarUsuario(usuario) {
 // GUARDAR
 // ===============================
 
-async function guardarUsuario() {
+async function guardarTarea() {
   guardando.value = true;
 
   try {
-    let url = "http://localhost:8080/new-usuario";
+    let url = "http://localhost:8080/new-tarea";
     let method = "POST";
 
     if (editando.value) {
-      // url = `http://localhost:8080/usuarios/${form.value.Id}`;
-      url = "http://localhost:8080/actualizar-usuario";
+      url = "http://localhost:8080/actualizar-tarea";
       method = "PUT";
     }
 
     let datitos = JSON.stringify({
-        Id: form.value.Id,
-        Nombre: form.value.Nombre,
-        Apellidos: form.value.Apellidos,
-        Correo: form.value.Correo,
-        Username: form.value.Username,
-        Password: form.value.Password,
-      })
+      Id: form.value.Id,
+      Nombre: form.value.Nombre,
+      ActividadId: Number(form.value.ActividadId),
+    });
 
     console.log(datitos);
 
@@ -292,25 +235,25 @@ async function guardarUsuario() {
     });
 
     if (!response.ok) {
-      throw new Error("Error al guardar usuario");
+      throw new Error("Error al guardar tarea");
     }
 
     $q.notify({
       type: "positive",
       message: editando.value
-        ? "Usuario actualizado correctamente"
-        : "Usuario creado correctamente",
+        ? "Tarea actualizada correctamente"
+        : "Tarea creada correctamente",
     });
 
     dialog.value = false;
 
-    await cargarUsuarios();
+    await cargarTareas();
   } catch (error) {
     console.error(error);
 
     $q.notify({
       type: "negative",
-      message: "No se pudo guardar el usuario",
+      message: "No se pudo guardar la tarea",
     });
   } finally {
     guardando.value = false;
@@ -321,37 +264,37 @@ async function guardarUsuario() {
 // ELIMINAR
 // ===============================
 
-function eliminarUsuario(usuario) {
+function eliminarTarea(tarea) {
   $q.dialog({
     title: "Confirmar",
-    message: `¿Deseas eliminar al usuario ${usuario.Username}?`,
+    message: `¿Deseas eliminar la tarea ${tarea.Nombre}?`,
     cancel: true,
     persistent: true,
   }).onOk(async () => {
     try {
       const response = await fetch(
-        `http://localhost:8080/eliminar-usuario?idusuario=`+usuario.Id,
+        `http://localhost:8080/eliminar-tarea?idtarea=` + tarea.Id,
         {
           method: "DELETE",
         },
       );
 
       if (!response.ok) {
-        throw new Error("Error al eliminar usuario");
+        throw new Error("Error al eliminar tarea");
       }
 
       $q.notify({
         type: "positive",
-        message: "Usuario eliminado correctamente",
+        message: "Tarea eliminada correctamente",
       });
 
-      await cargarUsuarios();
+      await cargarTareas();
     } catch (error) {
       console.error(error);
 
       $q.notify({
         type: "negative",
-        message: "No se pudo eliminar el usuario",
+        message: "No se pudo eliminar la tarea",
       });
     }
   });
@@ -362,6 +305,6 @@ function eliminarUsuario(usuario) {
 // ===============================
 
 onMounted(() => {
-  cargarUsuarios();
+  cargarTareas();
 });
 </script>

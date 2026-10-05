@@ -34,6 +34,7 @@ func Listar(db *sql.DB) ([]*Usuario, error) {
 		username,
 		password
 		from usuarios
+		where estado = 1
 	`
 	rows, err := db.Query(query)
 	if err != nil {
